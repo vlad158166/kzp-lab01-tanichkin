@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify on ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Temurin 21 with Maven cache
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Verify on Unix
+        if: runner.os != 'Windows'
+        run: ./mvnw -B verify -Dci.build.number=${{ github.run_number }}
+
+      - name: Verify on Windows
+        if: runner.os == 'Windows'
+        run: .\mvnw.cmd -B verify -Dci.build.number=${{ github.run_number }}
+
+      - name: Package on Unix
+        if: runner.os != 'Windows'
+        run: ./mvnw -B package -DskipTests -Dci.build.number=${{ github.run_number }}
+
+      - name: Package on Windows
+        if: runner.os == 'Windows'
+        run: .\mvnw.cmd -B package -DskipTests -Dci.build.number=${{ github.run_number }}
+
+      - name: Upload JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: jar-${{ matrix.os }}-v1.0.0-build-${{ github.run_number }}
+          path: target/kzp-lab01-tanichkin-1.0.0.jar
+          if-no-files-found: error
