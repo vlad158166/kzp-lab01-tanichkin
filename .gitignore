@@ -1,0 +1,15 @@
+# Maven build output
+target/
+
+# IDE and editor settings
+.idea/
+*.iml
+.vscode/
+
+# Compiled files and operating-system metadata
+*.class
+.DS_Store
+Thumbs.db
+
+# Local reports and screenshots are evidence, not public source files.
+out/
