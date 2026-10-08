@@ -259,22 +259,23 @@ mvnw.cmd clean verify
 дробовий середній пріоритет, форматування report, UTF-8 writer, CLI, empty input, no valid
 records, valid-invalid-valid pipeline та український UTF-8 end-to-end scenario.
 
-Останній підтверджений CI після завершення функціональної частини — GitHub Actions run #12:
-[Merge pull request #11 from vlad158166/feature/issue-7-edge-case-tests](https://github.com/vlad158166/kzp-lab01-tanichkin/actions/runs/37779946200).
-Він виконався на гілці `main` зі станом `completed / success` для `ubuntu-latest`,
-`windows-latest` і `macos-latest`.
+Після merge документаційного PR #12 GitHub Actions run #15 успішно перевірив стан гілки `main`:
+[run #15](https://github.com/vlad158166/kzp-lab01-tanichkin/actions/runs/37787869561).
+Він завершився зі станом `completed / success` для `ubuntu-latest`, `windows-latest` і
+`macos-latest`.
 
-Для run #12 workflow створив такі artifacts:
+Для run #15 workflow створив такі artifacts:
 
 ```text
-jar-macos-latest-v1.0.0-build-12
-jar-ubuntu-latest-v1.0.0-build-12
-jar-windows-latest-v1.0.0-build-12
+jar-macos-latest-v1.0.0-build-15
+jar-ubuntu-latest-v1.0.0-build-15
+jar-windows-latest-v1.0.0-build-15
 ```
 
-Artifacts доступні на сторінці workflow run #12. Product version у цьому запуску — `1.0.0`,
-а CI build number — `12`; позначення artifact не означає, що product version дорівнює 12.
-Git tag `v1.0.0` на цьому етапі ще не створено.
+Artifacts доступні на сторінці workflow run #15. Product version у цьому запуску — `1.0.0`,
+а CI build number — `15`; позначення artifact не означає, що product version дорівнює 15.
+Релізна версія проєкту має номер `1.0.0`; для неї використовується Git tag `v1.0.0`, який
+позначає фінальний перевірений стан `main`.
 
 ## 9. Документація
 
