@@ -31,4 +31,41 @@ public final class ProjectMetricsCalculator {
         }
         return total;
     }
+
+    /**
+     * Calculates the average priority from already validated project-task CSV rows.
+     *
+     * @param validLines validated raw CSV rows
+     * @return average priority, or {@code 0.0} when there are no valid rows
+     */
+    public static double averagePriority(List<String> validLines) {
+        if (validLines.isEmpty()) {
+            return 0.0;
+        }
+
+        int totalPriority = 0;
+        for (String line : validLines) {
+            String[] fields = line.split(";", -1);
+            totalPriority += Integer.parseInt(fields[3].trim());
+        }
+
+        return (double) totalPriority / validLines.size();
+    }
+
+    /**
+     * Counts completed tasks from already validated project-task CSV rows.
+     *
+     * @param validLines validated raw CSV rows
+     * @return number of rows whose done value is {@code true}
+     */
+    public static int countDoneTasks(List<String> validLines) {
+        int doneCount = 0;
+        for (String line : validLines) {
+            String[] fields = line.split(";", -1);
+            if (Boolean.parseBoolean(fields[4].trim())) {
+                doneCount++;
+            }
+        }
+        return doneCount;
+    }
 }

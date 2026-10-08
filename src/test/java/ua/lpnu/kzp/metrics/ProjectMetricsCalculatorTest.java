@@ -42,4 +42,51 @@ class ProjectMetricsCalculatorTest {
 
         assertEquals(4.0, ProjectMetricsCalculator.totalEstimateHours(validLines), 0.0001);
     }
+
+    @Test
+    void calculatesAveragePriorityForFiveValidRecords() {
+        double actual = ProjectMetricsCalculator.averagePriority(FIVE_VALID_LINES);
+
+        assertEquals(3.0, actual, 0.0001);
+    }
+
+    @Test
+    void keepsFractionalPartOfAveragePriority() {
+        List<String> validLines = List.of(
+                "Task one;User;1.0;1;false",
+                "Task two;User;1.0;2;true");
+
+        assertEquals(1.5, ProjectMetricsCalculator.averagePriority(validLines), 0.0001);
+    }
+
+    @Test
+    void calculatesEmptyAveragePriorityAsZero() {
+        assertEquals(0.0, ProjectMetricsCalculator.averagePriority(List.of()), 0.0001);
+    }
+
+    @Test
+    void countsDoneTasksForFiveValidRecords() {
+        assertEquals(3, ProjectMetricsCalculator.countDoneTasks(FIVE_VALID_LINES));
+    }
+
+    @Test
+    void countsNoDoneTasksForEmptyList() {
+        assertEquals(0, ProjectMetricsCalculator.countDoneTasks(List.of()));
+    }
+
+    @Test
+    void countsNoDoneTasksWhenAllValuesAreFalse() {
+        List<String> validLines = List.of(
+                "Task one;User;1.0;1;false",
+                "Task two;User;1.0;2;FALSE");
+
+        assertEquals(0, ProjectMetricsCalculator.countDoneTasks(validLines));
+    }
+
+    @Test
+    void countsOneDoneTaskForUppercaseTrue() {
+        List<String> validLines = List.of("Task;User;1.0;1;TRUE");
+
+        assertEquals(1, ProjectMetricsCalculator.countDoneTasks(validLines));
+    }
 }
