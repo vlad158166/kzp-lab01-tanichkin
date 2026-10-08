@@ -158,14 +158,19 @@ Issue → feature branch → focused commits → Pull Request → CI → merge �
 
 | Issue | Завдання | Реалізація | PR / commit | Стан |
 | --- | --- | --- | --- | --- |
-| #1 | Налаштування лабораторної роботи №1 | початкова структура проєкту та базова інфраструктура | `30c1309 build: add Maven infrastructure and wrapper` | OPEN |
-| #2 | Налаштувати Maven-проєкт і Maven Wrapper | `pom.xml`, Maven Wrapper, JUnit, SpotBugs і JAR framework | `30c1309 build: add Maven infrastructure and wrapper` | OPEN |
-| #3 | Налаштувати SpotBugs та виконуваний JAR | SpotBugs у фазі `verify` і Maven Shade Plugin | `30c1309 build: add Maven infrastructure and wrapper` | OPEN |
-| #4 | Налаштувати GitHub Actions для трьох ОС | matrix CI, Maven cache і artifact upload | `7767ca0 ci: add cross-platform verification workflow`; `a7375a1 ci: fix cross-platform wrapper execution` | OPEN |
+| #1 | Налаштування лабораторної роботи №1 | початкова структура проєкту та базова інфраструктура | `30c1309 build: add Maven infrastructure and wrapper` | CLOSED |
+| #2 | Налаштувати Maven-проєкт і Maven Wrapper | `pom.xml`, Maven Wrapper, JUnit, SpotBugs і JAR framework | `30c1309 build: add Maven infrastructure and wrapper` | CLOSED |
+| #3 | Налаштувати SpotBugs та виконуваний JAR | SpotBugs у фазі `verify` і Maven Shade Plugin | `30c1309 build: add Maven infrastructure and wrapper` | CLOSED |
+| #4 | Налаштувати GitHub Actions для трьох ОС | matrix CI, Maven cache і artifact upload | `7767ca0 ci: add cross-platform verification workflow`; `a7375a1 ci: fix cross-platform wrapper execution` | CLOSED |
 | #5 | Реалізувати читання і перевірку записів варіанта 22 | parser, reader, UTF-8 reading і повідомлення з номером рядка | PR #9 `feat: implement project row validation and CSV reading` | CLOSED |
 | #6 | Реалізувати обчислення показників і формування звіту | metrics, formatter, writer, `Main` і CLI | PR #10 `feat: implement project metrics, reporting and CLI` | CLOSED |
 | #7 | Додати тести та перевірку крайових випадків | empty input, no valid records і pipeline edge cases | PR #11 `test: cover project processing edge cases` | CLOSED |
-| #8 | Завершити README, REPORT та javadoc | документаційна робота в `feature/issue-8-documentation` | documentation commits у цій гілці | Документаційний етап: README / REPORT / Javadoc |
+| #8 | Завершити README, REPORT та javadoc | документаційна робота в `feature/issue-8-documentation` | PR #12 `docs: complete README, REPORT and javadoc` | CLOSED |
+
+Issues #1–#4 реалізовано historical infrastructure commits ще до повного PR workflow для
+предметної частини. Після фінальної перевірки історії репозиторію я закрив їх вручну як
+completed і додав коментарі з посиланнями на фактичні commits та CI evidence; вони не були
+закриті через Pull Request.
 
 У першому CI run я виявив два реальні дефекти конфігурації. На Unix runner скрипт `mvnw` не мав
 виконуваного біта, тому виникала помилка `Permission denied`. На Windows Maven неправильно
