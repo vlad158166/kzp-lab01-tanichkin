@@ -8,11 +8,12 @@ import org.junit.jupiter.api.Test;
 /** Smoke test that verifies Maven resource filtering for local builds. */
 class BuildInfoTest {
     @Test
-    void localBuildMetadataContainsProductVersionAndFallbackBuildNumber() {
+    void buildMetadataContainsProductVersionAndConfiguredBuildNumber() {
         Properties buildInfo = BuildInfo.load();
+        String expectedBuildNumber = System.getProperty("ci.build.number", "local");
 
         assertEquals("kzp-lab01-tanichkin", buildInfo.getProperty("product.name"));
         assertEquals("1.0.0", buildInfo.getProperty("product.version"));
-        assertEquals("local", buildInfo.getProperty("ci.build.number"));
+        assertEquals(expectedBuildNumber, buildInfo.getProperty("ci.build.number"));
     }
 }

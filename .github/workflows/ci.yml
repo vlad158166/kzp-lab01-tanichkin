@@ -32,7 +32,7 @@ jobs:
 
       - name: Verify on Windows
         if: runner.os == 'Windows'
-        run: .\mvnw.cmd -B verify -Dci.build.number=${{ github.run_number }}
+        run: .\mvnw.cmd -B verify "-Dci.build.number=${{ github.run_number }}"
 
       - name: Package on Unix
         if: runner.os != 'Windows'
@@ -40,7 +40,7 @@ jobs:
 
       - name: Package on Windows
         if: runner.os == 'Windows'
-        run: .\mvnw.cmd -B package -DskipTests -Dci.build.number=${{ github.run_number }}
+        run: .\mvnw.cmd -B package -DskipTests "-Dci.build.number=${{ github.run_number }}"
 
       - name: Upload JAR
         uses: actions/upload-artifact@v4
