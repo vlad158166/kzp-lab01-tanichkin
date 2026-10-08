@@ -318,8 +318,152 @@ CI, робив screenshots та повинен пояснити весь submitt
 
 ## 11. Відповіді на контрольні питання
 
-_Власні відповіді, пов'язані з фактичними файлами та доказами проєкту._
+### 1. Яке призначення `pom.xml` і його основних параметрів?
+
+`pom.xml` є описом Maven-проєкту, а не файлом із Java-кодом. У моєму проєкті він визначає
+coordinates `ua.lpnu.kzp:kzp-lab01-tanichkin:1.0.0`, Java 21 та UTF-8. Також я описав у ньому
+JUnit 5, Maven Compiler Plugin, Surefire, SpotBugs, Maven Shade Plugin і build properties,
+зокрема `ci.build.number`.
+
+### 2. Чим відрізняються фази `test`, `verify` і `package`?
+
+`test` виконує unit та integration tests. `verify` проходить попередні фази та запускає
+додаткові перевірки; у моєму проєкті на цій фазі працює SpotBugs. `package` після попередніх
+фаз створює виконуваний JAR. Команда `mvnw.cmd clean verify` спочатку видаляє каталог `target/`,
+а потім виконує чисту перевірку.
+
+### 3. Для чого потрібен Maven Wrapper?
+
+`mvnw.cmd` у Windows і `./mvnw` у macOS або Ubuntu дають змогу запускати потрібну конфігурацію
+Maven без вимоги вручну встановити однакову Maven-версію в кожній системі. Саме Wrapper я
+використовую в локальних командах і GitHub Actions.
+
+### 4. Яке призначення методу `main`?
+
+`main(String[] args)` є entry point Java application. У `Main` він вибирає режим `--help` або
+`--version`, розбирає `--input` і `--output`, визначає шляхи за замовчуванням та координує
+processing pipeline. Сам `Main` не виконує валідацію рядків чи обчислення показників.
+
+### 5. Чим відрізняються примітиви від `String`?
+
+`int`, `double` і `boolean` є primitive values, а `String` є reference type, тобто об'єктом.
+CSV спочатку читається як рядок `String`; після валідації я перетворюю `estimateHours` на
+`double`, `priority` на `int`, а `done` інтерпретую як boolean.
+
+### 6. Як правильно обчислити середнє значення з `double`?
+
+Потрібно уникнути integer division. У `ProjectMetricsCalculator.averagePriority` я використав
+фактичний рядок `return (double) totalPriority / validLines.size();`: cast робить лівий операнд
+`double`, тому для суми 3 і кількості 2 результатом буде 1.5, а не 1.
+
+### 7. Що станеться під час `Integer.parseInt("abc")`?
+
+`Integer.parseInt("abc")` кидає `NumberFormatException`, бо текст не є цілим числом.
+У validation logic я локально перехоплюю цю помилку для конкретного поля та повертаю причину
+невалідності, тому один хибний рядок не завершує обробку всього файла.
+
+### 8. Чому не можна мовчки пропускати некоректні рядки?
+
+Користувач має знати, який рядок відхилено і чому. `ProjectFileReader` додає до причини номер
+рядка, наприклад `Рядок 10: поле done має містити true або false`; таку поведінку можна
+відтворити та перевірити тестами. Рядок не включається в metrics, але решта valid rows
+обробляються далі.
+
+### 9. Навіщо використовувати `split(";", -1)`?
+
+Другий аргумент `-1` зберігає trailing empty fields. Наприклад, рядок
+`title;assignee;1.0;3;` має п'яте, порожнє поле `done`, а не чотири поля. Це дає змогу
+валідувати саме порожнє `done`, а не помилково повідомляти про неправильну кількість полів.
+
+### 10. Чому `Path.of` є кросплатформним?
+
+`Path.of("data", "input.csv")` будує шлях через API Java, який використовує правильний
+separator для поточної ОС. Це переносиміше за жорстко заданий Windows-шлях
+`"data\\input.csv"`; у програмі так само задається шлях `Path.of("out", "report.txt")`.
+
+### 11. Навіщо явно вказувати UTF-8?
+
+Я використовую `StandardCharsets.UTF_8` для читання input і запису report. Це не залежить від
+default charset операційної системи та зберігає українські символи однаково на Windows, Ubuntu
+і macOS.
+
+### 12. Чим `%n` відрізняється від `\n`?
+
+`%n` у `String.format` підставляє system line separator, тоді як `\n` є конкретним LF
+character. У `ProjectReportFormatter` я застосовую `%n`, щоб formatted output не залежав від
+припущення про Windows, macOS чи Linux.
+
+### 13. Які правила validation реалізовано для варіанта 22?
+
+Я перевіряю рівно п'ять полів. `title` і `assignee` мають бути nonblank; `estimateHours` —
+коректним `double` і не меншим за нуль; `priority` — синтаксично коректним `int`; `done` —
+`true` або `false` без урахування регістру після `trim()`. Я не ввів range для `priority`, бо
+методичка його не встановлює.
+
+### 14. Навіщо тестувати дробове середнє значення?
+
+Тест лише з average 3.0 не виявив би помилки integer division. Тому я додав випадок із
+priorities 1 і 2 та expected average 1.5; для `double` застосовано tolerance. Такий тест
+безпосередньо підтверджує правильність explicit cast у формулі середнього.
+
+### 15. Яка роль статичного аналізатора?
+
+SpotBugs шукає потенційні програмні дефекти, які можуть не проявитися у звичайних tests.
+У моєму Maven-проєкті він запускається під час `verify`; остання локальна перевірка дала
+0 bugs і 0 errors.
+
+### 16. Для чого використовується GitHub Actions?
+
+GitHub Actions автоматично повторює build, tests, SpotBugs, packaging і artifact upload на
+`ubuntu-latest`, `windows-latest` та `macos-latest`. Це перевіряє cross-platform behavior,
+використовує Maven dependency cache і передає run number як CI build number.
+
+### 17. Що має містити GitHub Issue для дефекту?
+
+Issue для дефекту має містити зрозумілий title, опис проблеми, steps to reproduce, expected
+result, actual result і relevant environment або context. Після виправлення Pull Request можна
+пов'язати з Issue через `Closes #N`, щоб стан задачі змінювався прозоро.
+
+### 18. Що потрібно зазначити про академічну доброчесність і AI?
+
+Потрібно чесно вказати, чи використовувався AI, який інструмент і ролі застосовано, для яких
+задач, які рекомендації прийнято, які помилки виправлено та що студент перевірив самостійно.
+У розділі 10 я описав допоміжну роль AI і власну відповідальність за команди, тести, CI,
+screenshots, метрики та розуміння submitted code.
+
+### 19. Чим відрізняються ролі DevOps і Validator?
+
+За фактичними файлами `ai/devops.md` і `ai/validator.md`, DevOps консультує щодо Maven,
+Wrapper, SpotBugs, JAR, CI, artifact-ів і cross-platform build. Validator готує edge cases,
+перевіряє результати й вимоги та описує лише реальні defects. Обидві ролі мають обмеження:
+DevOps не змінює конфігурацію без рішення студента, а Validator не виправляє код і не вигадує
+результати.
+
+### 20. Який рядок програми найскладніше пояснити і чому?
+
+Я обрав рядок `return (double) totalPriority / validLines.size();` з
+`ProjectMetricsCalculator`. Він поєднує суму `int`, кількість valid rows, explicit cast,
+запобігання integer division і повернення `double`. Я можу пояснити його тестом із
+priorities 1 і 2, для якого результатом має бути 1.5.
 
 ## 12. Висновки
 
-_Фактичний результат і підготовка до Lab 02._
+Я створив Java 21 Maven-проєкт для варіанта 22 «Проєктні задачі» та налаштував Maven Wrapper,
+JUnit 5, SpotBugs і виконуваний JAR. Я перевірив, що `pom.xml`, Wrapper і GitHub Actions дають
+змогу відтворено збирати, тестувати, перевіряти та пакувати проєкт на Windows, Ubuntu і macOS.
+
+Я реалізував обробку UTF-8 CSV: програма перевіряє структуру запису та значення полів, не
+перериває роботу через помилкові рядки й додає до повідомлення номер рядка та причину. Для
+п'яти затверджених valid records я отримав count 5, total estimateHours 27.50, average priority
+3.00 і done count 3. Report виводиться в консоль і записується у UTF-8 файл; CLI дає змогу
+використовувати стандартні або передані користувачем шляхи.
+
+Я перевірив програму unit та integration tests, крайовими випадками, `mvnw.cmd clean verify`,
+SpotBugs і CI matrix. На поточному етапі локальна перевірка містить 57 tests без failures та
+errors, а SpotBugs повідомляє 0 bugs і 0 errors. Git/GitHub workflow з Issues, feature branches,
+Pull Requests, CI та JAR artifacts забезпечив контрольовану історію змін і докази
+cross-platform behavior.
+
+Я також підготував README, REPORT, Javadoc і чесний опис використання AI як допоміжного
+інструмента. Цей код стане основою Lab 02: raw `String` і `String[]` буде замінено власними
+classes без зміни зовнішньої поведінки програми.
