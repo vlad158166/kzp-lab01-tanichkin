@@ -65,6 +65,14 @@ public final class Main {
         runProcessing(input, output);
     }
 
+    /**
+     * Executes the complete processing pipeline for a CSV input and a report output path.
+     * Validation errors are collected without stopping processing of valid rows. Any I/O failure is
+     * handled here by printing a concise message for the user.
+     *
+     * @param input path to the input CSV file
+     * @param output path to the output report file
+     */
     private static void runProcessing(Path input, Path output) {
         List<String> errors = new ArrayList<>();
 
