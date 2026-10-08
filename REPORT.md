@@ -158,14 +158,19 @@ Issue → feature branch → focused commits → Pull Request → CI → merge �
 
 | Issue | Завдання | Реалізація | PR / commit | Стан |
 | --- | --- | --- | --- | --- |
-| #1 | Налаштування лабораторної роботи №1 | початкова структура проєкту та базова інфраструктура | `30c1309 build: add Maven infrastructure and wrapper` | OPEN |
-| #2 | Налаштувати Maven-проєкт і Maven Wrapper | `pom.xml`, Maven Wrapper, JUnit, SpotBugs і JAR framework | `30c1309 build: add Maven infrastructure and wrapper` | OPEN |
-| #3 | Налаштувати SpotBugs та виконуваний JAR | SpotBugs у фазі `verify` і Maven Shade Plugin | `30c1309 build: add Maven infrastructure and wrapper` | OPEN |
-| #4 | Налаштувати GitHub Actions для трьох ОС | matrix CI, Maven cache і artifact upload | `7767ca0 ci: add cross-platform verification workflow`; `a7375a1 ci: fix cross-platform wrapper execution` | OPEN |
+| #1 | Налаштування лабораторної роботи №1 | початкова структура проєкту та базова інфраструктура | `30c1309 build: add Maven infrastructure and wrapper` | CLOSED |
+| #2 | Налаштувати Maven-проєкт і Maven Wrapper | `pom.xml`, Maven Wrapper, JUnit, SpotBugs і JAR framework | `30c1309 build: add Maven infrastructure and wrapper` | CLOSED |
+| #3 | Налаштувати SpotBugs та виконуваний JAR | SpotBugs у фазі `verify` і Maven Shade Plugin | `30c1309 build: add Maven infrastructure and wrapper` | CLOSED |
+| #4 | Налаштувати GitHub Actions для трьох ОС | matrix CI, Maven cache і artifact upload | `7767ca0 ci: add cross-platform verification workflow`; `a7375a1 ci: fix cross-platform wrapper execution` | CLOSED |
 | #5 | Реалізувати читання і перевірку записів варіанта 22 | parser, reader, UTF-8 reading і повідомлення з номером рядка | PR #9 `feat: implement project row validation and CSV reading` | CLOSED |
 | #6 | Реалізувати обчислення показників і формування звіту | metrics, formatter, writer, `Main` і CLI | PR #10 `feat: implement project metrics, reporting and CLI` | CLOSED |
 | #7 | Додати тести та перевірку крайових випадків | empty input, no valid records і pipeline edge cases | PR #11 `test: cover project processing edge cases` | CLOSED |
-| #8 | Завершити README, REPORT та javadoc | документаційна робота в `feature/issue-8-documentation` | documentation commits у цій гілці | Документаційний етап: README / REPORT / Javadoc |
+| #8 | Завершити README, REPORT та javadoc | документаційна робота в `feature/issue-8-documentation` | PR #12 `docs: complete README, REPORT and javadoc` | CLOSED |
+
+Issues #1–#4 реалізовано historical infrastructure commits ще до повного PR workflow для
+предметної частини. Після фінальної перевірки історії репозиторію я закрив їх вручну як
+completed і додав коментарі з посиланнями на фактичні commits та CI evidence; вони не були
+закриті через Pull Request.
 
 У першому CI run я виявив два реальні дефекти конфігурації. На Unix runner скрипт `mvnw` не мав
 виконуваного біта, тому виникала помилка `Permission denied`. На Windows Maven неправильно
@@ -259,22 +264,23 @@ mvnw.cmd clean verify
 дробовий середній пріоритет, форматування report, UTF-8 writer, CLI, empty input, no valid
 records, valid-invalid-valid pipeline та український UTF-8 end-to-end scenario.
 
-Останній підтверджений CI після завершення функціональної частини — GitHub Actions run #12:
-[Merge pull request #11 from vlad158166/feature/issue-7-edge-case-tests](https://github.com/vlad158166/kzp-lab01-tanichkin/actions/runs/37779946200).
-Він виконався на гілці `main` зі станом `completed / success` для `ubuntu-latest`,
-`windows-latest` і `macos-latest`.
+Після merge документаційного PR #12 GitHub Actions run #15 успішно перевірив стан гілки `main`:
+[run #15](https://github.com/vlad158166/kzp-lab01-tanichkin/actions/runs/37787869561).
+Він завершився зі станом `completed / success` для `ubuntu-latest`, `windows-latest` і
+`macos-latest`.
 
-Для run #12 workflow створив такі artifacts:
+Для run #15 workflow створив такі artifacts:
 
 ```text
-jar-macos-latest-v1.0.0-build-12
-jar-ubuntu-latest-v1.0.0-build-12
-jar-windows-latest-v1.0.0-build-12
+jar-macos-latest-v1.0.0-build-15
+jar-ubuntu-latest-v1.0.0-build-15
+jar-windows-latest-v1.0.0-build-15
 ```
 
-Artifacts доступні на сторінці workflow run #12. Product version у цьому запуску — `1.0.0`,
-а CI build number — `12`; позначення artifact не означає, що product version дорівнює 12.
-Git tag `v1.0.0` на цьому етапі ще не створено.
+Artifacts доступні на сторінці workflow run #15. Product version у цьому запуску — `1.0.0`,
+а CI build number — `15`; позначення artifact не означає, що product version дорівнює 15.
+Релізна версія проєкту має номер `1.0.0`; для неї використовується Git tag `v1.0.0`, який
+позначає фінальний перевірений стан `main`.
 
 ## 9. Документація
 
