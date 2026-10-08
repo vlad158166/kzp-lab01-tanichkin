@@ -73,6 +73,18 @@ class ProjectFileReaderTest {
         assertTrue(errors.isEmpty());
     }
 
+    @Test
+    void returnsNoRowsAndNoErrorsForEmptyInputFile() throws IOException {
+        Path input = temporaryDirectory.resolve("empty-input.csv");
+        Files.writeString(input, "", StandardCharsets.UTF_8);
+        List<String> errors = new ArrayList<>();
+
+        List<String> validLines = ProjectFileReader.readValidLines(input, errors);
+
+        assertTrue(validLines.isEmpty());
+        assertTrue(errors.isEmpty());
+    }
+
     private Path writeLines(String... lines) throws IOException {
         Path input = temporaryDirectory.resolve("input.csv");
         Files.write(input, List.of(lines), StandardCharsets.UTF_8);
