@@ -12,9 +12,9 @@ public final class BuildInfo {
     }
 
     /**
-     * Loads the product name, product version, and CI build number.
+     * Loads build metadata from the bundled resource.
      *
-     * @return immutable build metadata for CLI output
+     * @return properties containing the product name, product version, and CI build number
      */
     public static Properties load() {
         Properties properties = new Properties();
