@@ -87,7 +87,7 @@ public final class ProjectRowParser {
      * @param line raw CSV row
      * @return {@code null} for a valid row, otherwise a short Ukrainian error message
      */
-    static String validateRow(String line) {
+    public static String validateRow(String line) {
         if (!isNonBlank(line)) {
             return "порожній рядок";
         }
