@@ -165,7 +165,7 @@ Issue → feature branch → focused commits → Pull Request → CI → merge �
 | #5 | Реалізувати читання і перевірку записів варіанта 22 | parser, reader, UTF-8 reading і повідомлення з номером рядка | PR #9 `feat: implement project row validation and CSV reading` | CLOSED |
 | #6 | Реалізувати обчислення показників і формування звіту | metrics, formatter, writer, `Main` і CLI | PR #10 `feat: implement project metrics, reporting and CLI` | CLOSED |
 | #7 | Додати тести та перевірку крайових випадків | empty input, no valid records і pipeline edge cases | PR #11 `test: cover project processing edge cases` | CLOSED |
-| #8 | Завершити README, REPORT та javadoc | поточна документаційна гілка | `feature/issue-8-documentation` | OPEN |
+| #8 | Завершити README, REPORT та javadoc | документаційна робота в `feature/issue-8-documentation` | documentation commits у цій гілці | Документаційний етап: README / REPORT / Javadoc |
 
 У першому CI run я виявив два реальні дефекти конфігурації. На Unix runner скрипт `mvnw` не мав
 виконуваного біта, тому виникала помилка `Permission denied`. На Windows Maven неправильно
