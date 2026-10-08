@@ -1,16 +1,26 @@
 package ua.lpnu.kzp;
 
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
+import ua.lpnu.kzp.io.ProjectFileReader;
+import ua.lpnu.kzp.io.ProjectReportWriter;
+import ua.lpnu.kzp.report.ProjectReportFormatter;
 
-/** Entry point for the Lab 01 executable JAR infrastructure skeleton. */
+/**
+ * Runs Lab 01 processing: reads and validates a CSV file, calculates metrics, formats a report,
+ * prints it to the console, and writes it to a file.
+ */
 public final class Main {
     private Main() {
     }
 
     /**
-     * Prints infrastructure help or generated build information.
-     * Subject data processing is intentionally not implemented at this checkpoint.
+     * Prints generated build information for {@code --version}; without arguments, processes the
+     * default CSV input and creates the default report file.
      *
      * @param args command-line arguments
      */
@@ -19,8 +29,29 @@ public final class Main {
             printVersion();
             return;
         }
-        System.out.printf(Locale.ROOT,
-                "Infrastructure skeleton is ready. Subject processing will be added after the coding checkpoint.%n");
+
+        if (args.length == 0) {
+            runDefaultProcessing();
+            return;
+        }
+
+        System.err.printf(Locale.ROOT,
+                "Підтримується запуск без аргументів або аргумент --version.%n");
+    }
+
+    private static void runDefaultProcessing() {
+        Path input = Path.of("data", "input.csv");
+        Path output = Path.of("out", "report.txt");
+        List<String> errors = new ArrayList<>();
+
+        try {
+            List<String> validLines = ProjectFileReader.readValidLines(input, errors);
+            String report = ProjectReportFormatter.formatReport(validLines, errors);
+            System.out.print(report);
+            ProjectReportWriter.writeReport(output, report);
+        } catch (IOException exception) {
+            System.err.printf(Locale.ROOT, "Помилка роботи з файлом: %s%n", exception.getMessage());
+        }
     }
 
     private static void printVersion() {
