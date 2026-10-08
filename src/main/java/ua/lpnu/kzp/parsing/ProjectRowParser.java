@@ -43,4 +43,41 @@ public final class ProjectRowParser {
     static boolean isNonBlank(String raw) {
         return raw != null && !raw.trim().isEmpty();
     }
+
+    /**
+     * Checks whether estimate hours is a non-negative double value.
+     *
+     * @param raw raw estimate-hours field
+     * @return {@code true} when the trimmed value is a double not less than zero
+     */
+    static boolean isValidEstimateHours(String raw) {
+        if (!isNonBlank(raw)) {
+            return false;
+        }
+
+        try {
+            return Double.parseDouble(raw.trim()) >= 0;
+        } catch (NumberFormatException exception) {
+            return false;
+        }
+    }
+
+    /**
+     * Checks whether priority is a syntactically valid integer without applying a range.
+     *
+     * @param raw raw priority field
+     * @return {@code true} when the trimmed value can be parsed as an integer
+     */
+    static boolean isValidPriority(String raw) {
+        if (!isNonBlank(raw)) {
+            return false;
+        }
+
+        try {
+            Integer.parseInt(raw.trim());
+            return true;
+        } catch (NumberFormatException exception) {
+            return false;
+        }
+    }
 }

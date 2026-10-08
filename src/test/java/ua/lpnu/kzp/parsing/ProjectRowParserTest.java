@@ -58,4 +58,36 @@ class ProjectRowParserTest {
         assertTrue(ProjectRowParser.isNonBlank("Задача"));
         assertTrue(ProjectRowParser.isNonBlank(" Іван Петренко "));
     }
+
+    @Test
+    void acceptsValidEstimateHours() {
+        assertTrue(ProjectRowParser.isValidEstimateHours("8.5"));
+        assertTrue(ProjectRowParser.isValidEstimateHours("0"));
+        assertTrue(ProjectRowParser.isValidEstimateHours(" 4.0 "));
+    }
+
+    @Test
+    void rejectsInvalidEstimateHours() {
+        assertFalse(ProjectRowParser.isValidEstimateHours("-1.0"));
+        assertFalse(ProjectRowParser.isValidEstimateHours("abc"));
+        assertFalse(ProjectRowParser.isValidEstimateHours(null));
+        assertFalse(ProjectRowParser.isValidEstimateHours(""));
+        assertFalse(ProjectRowParser.isValidEstimateHours("   "));
+    }
+
+    @Test
+    void acceptsIntegerPriorityWithoutRangeValidation() {
+        assertTrue(ProjectRowParser.isValidPriority("3"));
+        assertTrue(ProjectRowParser.isValidPriority(" 5 "));
+        assertTrue(ProjectRowParser.isValidPriority("0"));
+        assertTrue(ProjectRowParser.isValidPriority("-1"));
+    }
+
+    @Test
+    void rejectsInvalidPriority() {
+        assertFalse(ProjectRowParser.isValidPriority("2.5"));
+        assertFalse(ProjectRowParser.isValidPriority("high"));
+        assertFalse(ProjectRowParser.isValidPriority(null));
+        assertFalse(ProjectRowParser.isValidPriority(""));
+    }
 }
