@@ -80,4 +80,37 @@ public final class ProjectRowParser {
             return false;
         }
     }
+
+    /**
+     * Validates one variant-22 CSV row and returns its first validation error.
+     *
+     * @param line raw CSV row
+     * @return {@code null} for a valid row, otherwise a short Ukrainian error message
+     */
+    static String validateRow(String line) {
+        if (!isNonBlank(line)) {
+            return "порожній рядок";
+        }
+        if (!hasCorrectFieldCount(line)) {
+            return "очікується 5 полів";
+        }
+
+        String[] fields = line.split(";", -1);
+        if (!isNonBlank(fields[0])) {
+            return "поле title порожнє";
+        }
+        if (!isNonBlank(fields[1])) {
+            return "поле assignee порожнє";
+        }
+        if (!isValidEstimateHours(fields[2])) {
+            return "поле estimateHours має некоректне значення";
+        }
+        if (!isValidPriority(fields[3])) {
+            return "поле priority має некоректне значення";
+        }
+        if (!isValidDoneValue(fields[4])) {
+            return "поле done має містити true або false";
+        }
+        return null;
+    }
 }

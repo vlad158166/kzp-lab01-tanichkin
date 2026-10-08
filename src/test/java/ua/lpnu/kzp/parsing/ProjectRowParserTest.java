@@ -1,6 +1,8 @@
 package ua.lpnu.kzp.parsing;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
@@ -89,5 +91,54 @@ class ProjectRowParserTest {
         assertFalse(ProjectRowParser.isValidPriority("high"));
         assertFalse(ProjectRowParser.isValidPriority(null));
         assertFalse(ProjectRowParser.isValidPriority(""));
+    }
+
+    @Test
+    void returnsNullForValidRow() {
+        assertNull(ProjectRowParser.validateRow("Розробити авторизацію;Іван Петренко;8.5;3;true"));
+    }
+
+    @Test
+    void reportsBlankRow() {
+        assertEquals("порожній рядок", ProjectRowParser.validateRow(null));
+        assertEquals("порожній рядок", ProjectRowParser.validateRow(""));
+        assertEquals("порожній рядок", ProjectRowParser.validateRow("   "));
+    }
+
+    @Test
+    void reportsIncorrectFieldCount() {
+        assertEquals("очікується 5 полів", ProjectRowParser.validateRow("Task;User;3.5;2"));
+    }
+
+    @Test
+    void reportsBlankTitle() {
+        assertEquals("поле title порожнє", ProjectRowParser.validateRow(";Іван Петренко;8.5;3;true"));
+    }
+
+    @Test
+    void reportsBlankAssignee() {
+        assertEquals("поле assignee порожнє", ProjectRowParser.validateRow("Task;;8.5;3;true"));
+    }
+
+    @Test
+    void reportsInvalidEstimateHours() {
+        assertEquals("поле estimateHours має некоректне значення",
+                ProjectRowParser.validateRow("Task;User;abc;3;true"));
+        assertEquals("поле estimateHours має некоректне значення",
+                ProjectRowParser.validateRow("Task;User;-1.0;3;true"));
+    }
+
+    @Test
+    void reportsInvalidPriority() {
+        assertEquals("поле priority має некоректне значення",
+                ProjectRowParser.validateRow("Task;User;8.5;high;true"));
+    }
+
+    @Test
+    void reportsInvalidDoneValue() {
+        assertEquals("поле done має містити true або false",
+                ProjectRowParser.validateRow("Task;User;8.5;3;yes"));
+        assertEquals("поле done має містити true або false",
+                ProjectRowParser.validateRow("Task;User;8.5;3;"));
     }
 }
