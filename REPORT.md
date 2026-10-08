@@ -152,23 +152,169 @@ Product version дорівнює `1.0.0`. Для локальної збірки
 
 ## 6. GitHub Issues і Pull Request
 
-_Таблиця Issue → зміна → commit/PR; номери додаються лише після фактичного створення Issues._
+Я створив Issues для поділу роботи на незалежні частини. Початкову infrastructure частину я
+реалізував окремими commits. Для предметної програми я використав послідовність
+Issue → feature branch → focused commits → Pull Request → CI → merge → automatic Issue close.
+
+| Issue | Завдання | Реалізація | PR / commit | Стан |
+| --- | --- | --- | --- | --- |
+| #1 | Налаштування лабораторної роботи №1 | початкова структура проєкту та базова інфраструктура | `30c1309 build: add Maven infrastructure and wrapper` | OPEN |
+| #2 | Налаштувати Maven-проєкт і Maven Wrapper | `pom.xml`, Maven Wrapper, JUnit, SpotBugs і JAR framework | `30c1309 build: add Maven infrastructure and wrapper` | OPEN |
+| #3 | Налаштувати SpotBugs та виконуваний JAR | SpotBugs у фазі `verify` і Maven Shade Plugin | `30c1309 build: add Maven infrastructure and wrapper` | OPEN |
+| #4 | Налаштувати GitHub Actions для трьох ОС | matrix CI, Maven cache і artifact upload | `7767ca0 ci: add cross-platform verification workflow`; `a7375a1 ci: fix cross-platform wrapper execution` | OPEN |
+| #5 | Реалізувати читання і перевірку записів варіанта 22 | parser, reader, UTF-8 reading і повідомлення з номером рядка | PR #9 `feat: implement project row validation and CSV reading` | CLOSED |
+| #6 | Реалізувати обчислення показників і формування звіту | metrics, formatter, writer, `Main` і CLI | PR #10 `feat: implement project metrics, reporting and CLI` | CLOSED |
+| #7 | Додати тести та перевірку крайових випадків | empty input, no valid records і pipeline edge cases | PR #11 `test: cover project processing edge cases` | CLOSED |
+| #8 | Завершити README, REPORT та javadoc | поточна документаційна гілка | `feature/issue-8-documentation` | OPEN |
+
+У першому CI run я виявив два реальні дефекти конфігурації. На Unix runner скрипт `mvnw` не мав
+виконуваного біта, тому виникала помилка `Permission denied`. На Windows Maven неправильно
+обробляв неекрановану property `ci.build.number`. Я перевірив діагностику, додав executable bit
+для `mvnw` у Git metadata та взяв Windows property у лапки. Ці виправлення зафіксовані commit
+`a7375a1`; після них CI став green.
 
 ## 7. Приклади роботи
 
-_Автентичні вхідні дані, консольний вивід, файл звіту та повідомлення про помилки._
+Я виконав default запуск з кореня репозиторію командою:
+
+```text
+java -jar target/kzp-lab01-tanichkin-1.0.0.jar
+```
+
+Програма сформувала такий результат:
+
+```text
+Результати обробки проєктних задач
+
+Кількість коректних записів: 5
+Сумарна оцінка годин: 27.50
+Середній пріоритет: 3.00
+Кількість виконаних задач: 3
+Кількість помилкових записів: 6
+
+Помилки:
+Рядок 6: поле title порожнє
+Рядок 7: поле assignee порожнє
+Рядок 8: поле estimateHours має некоректне значення
+Рядок 9: поле estimateHours має некоректне значення
+Рядок 10: поле done має містити true або false
+Рядок 11: очікується 5 полів
+```
+
+Я перевірив, що default report записується у `out/report.txt` як UTF-8. Той самий `report String`
+використовується для консолі й для файла, тому правила форматування не дублюються.
+
+Для custom paths я виконав:
+
+```text
+java -jar target/kzp-lab01-tanichkin-1.0.0.jar --input data/input.csv --output out/custom-report.txt
+```
+
+Я порівняв default і custom результати для одного input та отримав фактичний результат
+`REPORTS_EQUAL=True`.
+
+Команда довідки дала:
+
+```text
+Використання:
+  java -jar kzp-lab01-tanichkin-1.0.0.jar [опції]
+
+Опції:
+  --help            Показати довідку
+  --version         Показати версію та номер збірки
+  --input <файл>    Шлях до вхідного CSV
+  --output <файл>   Шлях до вихідного звіту
+```
+
+Локальна команда `--version` дала:
+
+```text
+kzp-lab01-tanichkin 1.0.0
+build local
+```
+
+Я також перевірив дружню обробку некоректних аргументів:
+
+```text
+java -jar target/kzp-lab01-tanichkin-1.0.0.jar --unknown
+Невідомий аргумент: --unknown
+Використайте --help для довідки.
+
+java -jar target/kzp-lab01-tanichkin-1.0.0.jar --input
+Помилка аргументів: після --input очікується шлях.
+```
 
 ## 8. Тестування, CI і артефакти
 
-_Виконані команди, фактичні результати й посилання на Actions/artifacts._
+Я виконав локальну перевірку командою:
+
+```text
+mvnw.cmd clean verify
+```
+
+Після Issue #7 я отримав 57 tests, 0 failures і 0 errors. SpotBugs завершився з результатом
+0 bugs і 0 errors. Команда `mvnw.cmd package` також успішно створює виконуваний JAR.
+
+Тести охоплюють parser validation, reader і нумерацію рядків, numeric validation, усі metrics,
+дробовий середній пріоритет, форматування report, UTF-8 writer, CLI, empty input, no valid
+records, valid-invalid-valid pipeline та український UTF-8 end-to-end scenario.
+
+Останній підтверджений CI після завершення функціональної частини — GitHub Actions run #12:
+[Merge pull request #11 from vlad158166/feature/issue-7-edge-case-tests](https://github.com/vlad158166/kzp-lab01-tanichkin/actions/runs/37779946200).
+Він виконався на гілці `main` зі станом `completed / success` для `ubuntu-latest`,
+`windows-latest` і `macos-latest`.
+
+Для run #12 workflow створив такі artifacts:
+
+```text
+jar-macos-latest-v1.0.0-build-12
+jar-ubuntu-latest-v1.0.0-build-12
+jar-windows-latest-v1.0.0-build-12
+```
+
+Artifacts доступні на сторінці workflow run #12. Product version у цьому запуску — `1.0.0`,
+а CI build number — `12`; позначення artifact не означає, що product version дорівнює 12.
+Git tag `v1.0.0` на цьому етапі ще не створено.
 
 ## 9. Документація
 
-_Javadoc публічних і нетривіальних елементів._
+Я оновив `README.md`: у ньому описані призначення програми, CSV format, збірка, запуск, CLI,
+versioning, CI, testing і AI disclosure. Я також перевірив Javadoc для публічних і нетривіальних
+елементів:
+
+- `Main`, `main` і `runProcessing`;
+- `BuildInfo` і `load`;
+- `ProjectFileReader` і `readValidLines`;
+- `ProjectReportWriter` і `writeReport`;
+- `ProjectMetricsCalculator` та його public metrics methods;
+- `ProjectRowParser` і `validateRow`;
+- `ProjectReportFormatter` і `formatReport`.
+
+Я виправив неточне формулювання в Javadoc `BuildInfo.load()`: попередній опис називав
+`Properties` immutable, хоча `java.util.Properties` є mutable object. Тепер Javadoc коректно
+описує повернення properties з product/build metadata.
 
 ## 10. Академічна доброчесність і використання ШІ
 
-_Назва інструмента, ролі, запити, прийняті рекомендації, виправлені помилки, перевірка студентом і підтвердження розуміння коду._
+Я використовував AI як допоміжний інструмент для планування етапів, пояснення Java, Maven і
+Git, підготовки test scenarios, аналізу помилок, допомоги з GitHub workflow та перевірки
+README, REPORT і Javadoc. AI не повинен підміняти моє розуміння програми.
+
+У repository я підготував ролі `manager`, `devops`, `developer`, `validator`, `documenter` і
+`reviewer`. Вони відповідно допомагали декомпозувати вимоги на Issues, перевіряти Maven/CI,
+пояснювати малий крок алгоритму, готувати edge cases, перевіряти документацію та проводити
+requirements/cross-platform review. Їхні prompts і limitations збережені у `ai/`; наприклад,
+роль developer не має писати повну предметну програму замість студента, а validator не має
+вигадувати дефекти чи результати тестів.
+
+Я прийняв конкретні рекомендації: використати `split(";", -1)` для збереження порожнього
+останнього поля, розділити відповідальності між компонентами, форматувати числа через
+`Locale.ROOT`, явно використовувати UTF-8, застосувати `@TempDir` у файлових tests, Maven
+Wrapper і CI matrix. Я також перевіряв виявлені проблеми: permission для `mvnw` на Unix,
+quoting Maven property у Windows та некоректний Javadoc про mutable `Properties`.
+
+Я сам запускав команди, перевіряв результати й correctness metrics, перевіряв Pull Requests і
+CI, робив screenshots та повинен пояснити весь submitted code і прийняті рішення.
 
 ## 11. Відповіді на контрольні питання
 
