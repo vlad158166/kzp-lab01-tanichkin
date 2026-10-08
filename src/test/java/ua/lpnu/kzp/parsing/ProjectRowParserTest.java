@@ -27,4 +27,35 @@ class ProjectRowParserTest {
     void rejectsOtherText() {
         assertFalse(ProjectRowParser.isValidDoneValue("yes"));
     }
+
+    @Test
+    void acceptsRowWithExactlyFiveFields() {
+        assertTrue(ProjectRowParser.hasCorrectFieldCount("Task;User;3.5;2;true"));
+    }
+
+    @Test
+    void rejectsRowsWithFourOrSixFields() {
+        assertFalse(ProjectRowParser.hasCorrectFieldCount("Task;User;3.5;2"));
+        assertFalse(ProjectRowParser.hasCorrectFieldCount("Task;User;3.5;2;true;extra"));
+    }
+
+    @Test
+    void keepsEmptyLastFieldWhenCounting() {
+        assertTrue(ProjectRowParser.hasCorrectFieldCount("Task;User;3.5;2;"));
+    }
+
+    @Test
+    void rejectsNullAndEmptyRows() {
+        assertFalse(ProjectRowParser.hasCorrectFieldCount(null));
+        assertFalse(ProjectRowParser.hasCorrectFieldCount(""));
+    }
+
+    @Test
+    void identifiesNonBlankText() {
+        assertFalse(ProjectRowParser.isNonBlank(null));
+        assertFalse(ProjectRowParser.isNonBlank(""));
+        assertFalse(ProjectRowParser.isNonBlank("   "));
+        assertTrue(ProjectRowParser.isNonBlank("Задача"));
+        assertTrue(ProjectRowParser.isNonBlank(" Іван Петренко "));
+    }
 }
