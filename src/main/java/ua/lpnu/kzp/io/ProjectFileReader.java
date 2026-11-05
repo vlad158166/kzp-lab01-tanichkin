@@ -6,33 +6,32 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import ua.lpnu.kzp.parsing.ProjectRowParser;
+import ua.lpnu.kzp.model.ProjectTask;
 
-/** Reads UTF-8 project-task CSV rows and separates valid rows from validation errors. */
+/** Reads UTF-8 project-task CSV rows and separates valid tasks from row-level errors. */
 public final class ProjectFileReader {
     private ProjectFileReader() {
     }
 
     /**
-     * Reads all lines from a UTF-8 input file and validates each line independently.
+     * Reads all lines from a UTF-8 input file and creates each valid task independently.
      *
      * @param input path to the input CSV file
      * @param errors destination for row-numbered validation errors
-     * @return raw CSV rows that passed validation
+     * @return valid project-task objects created from the CSV rows
      * @throws IOException if the input file cannot be read
      */
-    public static List<String> readValidLines(Path input, List<String> errors) throws IOException {
+    public static List<ProjectTask> readTasks(Path input, List<String> errors) throws IOException {
         List<String> lines = Files.readAllLines(input, StandardCharsets.UTF_8);
-        List<String> validLines = new ArrayList<>();
+        List<ProjectTask> tasks = new ArrayList<>();
 
         for (int index = 0; index < lines.size(); index++) {
-            String error = ProjectRowParser.validateRow(lines.get(index));
-            if (error == null) {
-                validLines.add(lines.get(index));
-            } else {
-                errors.add("Рядок " + (index + 1) + ": " + error);
+            try {
+                tasks.add(ProjectTask.fromCsv(lines.get(index)));
+            } catch (IllegalArgumentException exception) {
+                errors.add("Рядок " + (index + 1) + ": " + exception.getMessage());
             }
         }
-        return validLines;
+        return tasks;
     }
 }

@@ -1,8 +1,10 @@
 package ua.lpnu.kzp.metrics;
 
 import java.util.List;
+import ua.lpnu.kzp.model.EstimatePriority;
+import ua.lpnu.kzp.model.ProjectTask;
 
-/** Calculates numeric metrics from already validated project-task CSV rows. */
+/** Calculates numeric metrics from already validated project-task objects. */
 public final class ProjectMetricsCalculator {
     private ProjectMetricsCalculator() {
     }
@@ -10,59 +12,53 @@ public final class ProjectMetricsCalculator {
     /**
      * Counts rows that were already accepted by the validation layer.
      *
-     * @param validLines validated raw CSV rows
+     * @param tasks validated project tasks
      * @return number of valid records
      */
-    public static int countValidRecords(List<String> validLines) {
-        return validLines.size();
+    public static int countValidRecords(List<ProjectTask> tasks) {
+        return tasks.size();
     }
 
     /**
-     * Sums estimate-hours values from already validated project-task CSV rows.
+     * Aggregates estimate hours and priorities from already validated project tasks.
      *
-     * @param validLines validated raw CSV rows
-     * @return total estimate hours
+     * @param tasks validated project tasks
+     * @return immutable aggregate used for report metrics
      */
-    public static double totalEstimateHours(List<String> validLines) {
-        double total = 0.0;
-        for (String line : validLines) {
-            String[] fields = line.split(";", -1);
-            total += Double.parseDouble(fields[2].trim());
+    public static EstimatePriority calculateEstimatePriority(List<ProjectTask> tasks) {
+        double totalEstimateHours = 0.0;
+        int totalPriority = 0;
+        for (ProjectTask task : tasks) {
+            totalEstimateHours += task.getEstimateHours();
+            totalPriority += task.getPriority();
         }
-        return total;
+        return new EstimatePriority(totalEstimateHours, totalPriority);
     }
 
     /**
-     * Calculates the average priority from already validated project-task CSV rows.
+     * Calculates average priority from an aggregate and the number of valid tasks.
      *
-     * @param validLines validated raw CSV rows
+     * @param aggregate sum of estimate-hours and priority values
+     * @param validTaskCount number of valid project tasks
      * @return average priority, or {@code 0.0} when there are no valid rows
      */
-    public static double averagePriority(List<String> validLines) {
-        if (validLines.isEmpty()) {
+    public static double averagePriority(EstimatePriority aggregate, int validTaskCount) {
+        if (validTaskCount == 0) {
             return 0.0;
         }
-
-        int totalPriority = 0;
-        for (String line : validLines) {
-            String[] fields = line.split(";", -1);
-            totalPriority += Integer.parseInt(fields[3].trim());
-        }
-
-        return (double) totalPriority / validLines.size();
+        return (double) aggregate.totalPriority() / validTaskCount;
     }
 
     /**
-     * Counts completed tasks from already validated project-task CSV rows.
+     * Counts completed tasks from already validated project-task objects.
      *
-     * @param validLines validated raw CSV rows
+     * @param tasks validated project tasks
      * @return number of rows whose done value is {@code true}
      */
-    public static int countDoneTasks(List<String> validLines) {
+    public static int countDoneTasks(List<ProjectTask> tasks) {
         int doneCount = 0;
-        for (String line : validLines) {
-            String[] fields = line.split(";", -1);
-            if (Boolean.parseBoolean(fields[4].trim())) {
+        for (ProjectTask task : tasks) {
+            if (task.isDone()) {
                 doneCount++;
             }
         }

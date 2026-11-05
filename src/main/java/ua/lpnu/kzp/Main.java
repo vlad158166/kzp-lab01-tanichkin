@@ -8,12 +8,13 @@ import java.util.Locale;
 import java.util.Properties;
 import ua.lpnu.kzp.io.ProjectFileReader;
 import ua.lpnu.kzp.io.ProjectReportWriter;
+import ua.lpnu.kzp.model.ProjectTask;
 import ua.lpnu.kzp.report.ProjectReportFormatter;
 
 /**
- * Runs Lab 01 processing: reads and validates a CSV file, calculates metrics, formats a report,
- * prints it to the console, and writes it to a file. It supports {@code --help}, {@code --version},
- * {@code --input <file>}, and {@code --output <file>}.
+ * Runs Lab 02 processing: reads typed project tasks from a CSV file, calculates metrics, formats a
+ * report, prints it to the console, and writes it to a file. It supports {@code --help},
+ * {@code --version}, {@code --input <file>}, and {@code --output <file>}.
  */
 public final class Main {
     private static final Path DEFAULT_INPUT = Path.of("data", "input.csv");
@@ -77,8 +78,8 @@ public final class Main {
         List<String> errors = new ArrayList<>();
 
         try {
-            List<String> validLines = ProjectFileReader.readValidLines(input, errors);
-            String report = ProjectReportFormatter.formatReport(validLines, errors);
+            List<ProjectTask> tasks = ProjectFileReader.readTasks(input, errors);
+            String report = ProjectReportFormatter.formatReport(tasks, errors);
             System.out.print(report);
             ProjectReportWriter.writeReport(output, report);
         } catch (IOException exception) {
