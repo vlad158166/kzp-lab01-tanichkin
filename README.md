@@ -1,47 +1,37 @@
-# Кросплатформні засоби програмування — лабораторна робота №1
+# Кросплатформні засоби програмування — лабораторна робота №2
 
-## Варіант 22 — «Проєктні задачі»
+Варіант 22 — «Проєктні задачі». Lab 02 продовжує verified стан Lab 01 (`v1.0.0`) у тому самому репозиторії. Мета перебудови — замінити рядки й роботу з індексами CSV на інкапсульовану модель Java без зміни зовнішнього звіту.
 
-Лабораторна робота №1 має тему «РОЗГОРТАННЯ JAVA-ПРОЄКТУ ТА БАЗОВА ОБРОБКА ДАНИХ».
-Програма читає CSV-файл, перевіряє записи, обчислює чотири показники, формує текстовий
-звіт, виводить його в консоль і записує у UTF-8 файл.
+## Модель даних
 
-## Формат вхідних даних
-
-Файл має кодування UTF-8; один запис займає один рядок. Роздільник полів — `;`:
+Один UTF-8 CSV-рядок має формат:
 
 ```text
 title;assignee;estimateHours;priority;done
 ```
 
-| Поле | Тип | Правило перевірки |
-| --- | --- | --- |
-| `title` | `String` | не порожнє |
-| `assignee` | `String` | не порожнє |
-| `estimateHours` | `double` | коректне число, не менше за `0` |
-| `priority` | `int` | синтаксично коректне ціле число; діапазон не задається |
-| `done` | `boolean` | лише `true` або `false`, без урахування регістру після `trim()` |
+`ProjectTask` є незмінним класом із `private final` полями та конструкторними інваріантами:
 
-Приклад п'яти коректних записів:
+| Поле | Тип | Правило |
+|---|---|---|
+| `title` | `String` | непорожнє після trim |
+| `assignee` | `String` | непорожнє після trim |
+| `estimateHours` | `double` | скінченне й не від'ємне |
+| `priority` | `int` | не від'ємне |
+| `done` | `boolean` | у CSV лише `true` або `false`, без урахування регістру |
+
+`ProjectTask.fromCsv(String)` застосовує `split(";", -1)`, тому порожнє останнє поле не зникає. `EstimatePriority` — record із `totalEstimateHours` та `totalPriority`, який переносить проміжний агрегат метрик.
+
+## Typed pipeline Lab 02
 
 ```text
-Розробити авторизацію;Іван Петренко;8.5;3;true
-Підготувати документацію;Олена Коваль;4.0;2;false
-Протестувати API;Андрій Мельник;6.5;1;true
-Налаштувати CI;Марія Бойко;3.0;4;true
-Оптимізувати запити;Софія Левченко;5.5;5;false
+CSV text → ProjectTask.fromCsv → List<ProjectTask>
+         → EstimatePriority / metrics → formatted report → console + UTF-8 file
 ```
 
-За замовчуванням програма читає `data/input.csv` і створює `out/report.txt`.
-Інші шляхи можна передати через параметри командного рядка.
+`ProjectFileReader` читає файл і додає номер рядка до помилки. `ProjectMetricsCalculator` не знає синтаксису CSV: він отримує лише `List<ProjectTask>`. Застарілий `ProjectRowParser` вилучено, щоб не підтримувати дві незалежні реалізації валідації.
 
-Поточний `data/input.csv` також містить шість навмисно невалідних рядків для демонстрації
-валідації. Невалідний рядок не завершує роботу програми: звіт містить номер рядка й причину,
-а такий запис не входить до обчислених показників.
-
-## Очікувані показники
-
-Для п'яти коректних записів з прикладу програма формує такі показники:
+Для контрольного набору Lab 01 зовнішній результат лишається таким:
 
 ```text
 Кількість коректних записів: 5
@@ -50,127 +40,40 @@ title;assignee;estimateHours;priority;done
 Кількість виконаних задач: 3
 ```
 
-## Структура проєкту
+## Збірка і запуск
 
-| Компонент | Призначення |
-| --- | --- |
-| `Main` | обробляє аргументи, координує pipeline, виводить і записує один звіт |
-| `BuildInfo` | читає product version і CI build number для `--version` |
-| `ProjectRowParser` | перевіряє один CSV-рядок і повертає причину помилки |
-| `ProjectFileReader` | читає UTF-8 CSV та відокремлює валідні рядки від помилок |
-| `ProjectMetricsCalculator` | обчислює чотири показники лише для валідних рядків |
-| `ProjectReportFormatter` | формує один український текстовий звіт |
-| `ProjectReportWriter` | записує готовий звіт у UTF-8 файл |
-
-## Збірка і перевірка
-
-Потрібна Java 21. Проєкт використовує Maven Wrapper, тому встановлення system Maven не є
-обов'язковим.
+Потрібна Java 21. Maven Wrapper зберігається з Lab 01.
 
 Windows:
 
 ```text
-mvnw.cmd clean verify
+mvnw.cmd test
+mvnw.cmd verify
 mvnw.cmd package
 ```
 
 macOS / Ubuntu:
 
 ```text
-./mvnw clean verify
+./mvnw test
+./mvnw verify
 ./mvnw package
 ```
 
-`verify` запускає JUnit-тести та SpotBugs, а `package` створює виконуваний JAR з залежностями.
-
-## Запуск і CLI
-
-Після збірки JAR розташований у `target/kzp-lab01-tanichkin-1.0.0.jar`.
-
-Запуск із default paths:
+Після package виконуваний JAR запускається так:
 
 ```text
 java -jar target/kzp-lab01-tanichkin-1.0.0.jar
 ```
 
-Довідка:
+Підтримуються `--help`, `--version`, `--input <файл>` і `--output <файл>`. За замовчуванням використовуються `data/input.csv` і `out/report.txt`.
 
-```text
-java -jar target/kzp-lab01-tanichkin-1.0.0.jar --help
-```
+## Перевірка та CI
 
-Версія:
+JUnit-тести перевіряють `ProjectTask`, `fromCsv`, `EstimatePriority`, typed reader, метрики та сумісність повного звіту з еталоном Lab 01. GitHub Actions виконує `verify`, packaging і upload JAR artifact на `ubuntu-latest`, `windows-latest` та `macos-latest`.
 
-```text
-java -jar target/kzp-lab01-tanichkin-1.0.0.jar --version
-```
+Фактичний статус перевірок і CI для цієї Lab 02 гілки фіксується тільки після реальних запусків у GitHub Actions та в Pull Request.
 
-Custom input і output:
+## Академічна доброчесність
 
-```text
-java -jar target/kzp-lab01-tanichkin-1.0.0.jar --input data/input.csv --output out/custom-report.txt
-```
-
-| Опція | Призначення |
-| --- | --- |
-| `--help` | показує коротку довідку без читання CSV |
-| `--version` | показує product version і номер збірки без обробки даних |
-| `--input <file>` | задає шлях до вхідного CSV |
-| `--output <file>` | задає шлях до вихідного текстового звіту |
-
-Без аргументів використовуються `data/input.csv` і `out/report.txt`. Опції `--input` та
-`--output` можна передавати в будь-якому порядку.
-
-## Версіювання
-
-Product version проєкту — `1.0.0`. Це не те саме, що CI build number.
-
-Локальний запуск `--version` має вигляд:
-
-```text
-kzp-lab01-tanichkin 1.0.0
-build local
-```
-
-У GitHub Actions номер запуску передається Maven property `ci.build.number`, потрапляє до
-build metadata та стає доступним через `--version`. Отже, product version описує версію
-програми, а CI build number ідентифікує конкретний запуск workflow.
-
-## Кросплатформність і CI
-
-Кросплатформність забезпечують Java 21, `Path` / `Path.of`, явне UTF-8 кодування,
-платформонейтральний `%n` для роздільників рядків, `Locale.ROOT` для десяткового роздільника
-та Maven Wrapper.
-
-GitHub Actions виконує `verify` з Temurin 21 на `ubuntu-latest`, `windows-latest` і
-`macos-latest`. У workflow увімкнено Maven dependency cache. Виконуваний JAR публікується як
-artifact з шаблоном назви:
-
-```text
-jar-<OS>-v1.0.0-build-<CI_RUN_NUMBER>
-```
-
-CI build number є виконанням зірочкового завдання і не замінює product version `1.0.0`.
-
-## Тестування
-
-Після Issue #7 локальна перевірка `mvnw.cmd clean verify` дала:
-
-```text
-57 tests
-0 failures
-0 errors
-SpotBugs: 0 bugs, 0 errors
-```
-
-Тести охоплюють коректні, порожні та структурно неправильні рядки; нечислові й від'ємні
-`estimateHours`; некоректні `priority` і `done`; дробовий середній пріоритет; порожній input
-file; відсутність валідних записів; український UTF-8; pipeline valid-invalid-valid; custom CLI
-paths, відсутні значення опцій і невідомі аргументи.
-
-## Академічна доброчесність та використання AI
-
-AI використовувався як допоміжний інструмент для планування, пояснення коду, підготовки
-тестових сценаріїв, перевірки документації та допомоги з Git/GitHub workflow. Студент
-перевіряв код, запускав команди й тести, перевіряв результати CI та повинен уміти пояснити
-поданий код і прийняті рішення.
+Codex використовувався як консультант і виконавець малих погоджених checkpoint-ів: студент окремо переглянув `ProjectTask`, `fromCsv`, `EstimatePriority` і typed pipeline перед переходом до наступного етапу. Повний журнал і межі відповідальності збережено в [ai/LAB_02_AI_USAGE.md](ai/LAB_02_AI_USAGE.md); студент відповідає за розуміння та пояснення кожного рядка поданого коду.
